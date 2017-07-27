@@ -1,0 +1,16 @@
+{
+  "S3Bucket": "spa-cf-training",
+  "releaseVersion": null,
+  "distFolder": null,
+  "version": "version",
+  "sourceFolder": "./dist",
+  "region": "eu-west-1",
+  "DistributionId": "E6UQGRFCXZ65S",
+  "ItemsToInvalidate": [
+    "/*",
+    "/index.html",
+    "/service-worker.js"
+  ],
+  "ApplicationName": "Compit2_SPA",
+  "EnvironmentName": "INTEGRATION"
+}

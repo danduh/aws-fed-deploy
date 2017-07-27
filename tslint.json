@@ -1,0 +1,60 @@
+{
+  "defaultSeverity": "error",
+  "extends": [
+    "tslint:recommended"
+  ],
+  "jsRules": {},
+  "rules": {
+    "trailing-comma": [
+      false
+    ],
+    "radix": false,
+    "component-class-suffix": true,
+    "directive-class-suffix": true,
+    "invoke-injectable": true,
+    "no-access-missing-member": false,
+    "no-attribute-parameter-decorator": true,
+    "no-forward-ref": true,
+    "no-input-rename": true,
+    "no-output-rename": true,
+    "templates-use-public": false,
+    "interface-name": false,
+    "member-ordering": false,
+    "member-access": false,
+    "prefer-const": false,
+    "object-literal-shorthand": false,
+    "curly": false,
+    "space-before-function-paren": false,
+    "max-classes-per-file": false,
+    "only-arrow-functions": false,
+    "object-literal-key-quotes": false,
+    "semicolon": false,
+    "no-console": [
+      true,
+      "time",
+      "timeEnd",
+      "trace"
+    ],
+    "max-line-length": [
+      true,
+      200
+    ],
+    "no-string-literal": false,
+    "object-literal-sort-keys": false,
+    "ordered-imports": false,
+    "quotemark": [
+      true,
+      "avoid-escape"
+    ],
+    "variable-name": [
+      true,
+      "allow-leading-underscore",
+      "allow-pascal-case",
+      "ban-keywords",
+      "check-format"
+    ]
+  },
+  "rulesDirectory": [
+    "node_modules/codelyzer"
+  ]
+}
