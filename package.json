@@ -4,7 +4,7 @@
   "description": "this package will help you to deploy your APP to AWS (S3-CF)",
   "main": "dist/index.js",
   "scripts": {
-    "start": "node ./dist/index.js doUpload --dpl-config config/test-config.json",
+    "start": "tsc && node ./dist/index.js doUpload --dpl-config config/test-config.json",
     "test": "test",
     "tsc": "tsc"
   },

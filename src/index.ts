@@ -8,6 +8,5 @@ export const doUpload = (some, some2) => {
     let deploy = new UploadToS3()
 };
 
-import * as m from 'make-runnable'
-
-m
+import * as mr from 'make-runnable'
+mr

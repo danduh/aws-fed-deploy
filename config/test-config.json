@@ -1,7 +1,7 @@
 {
-  "S3Bucket": "spa-cf-training",
+  "S3Bucket": "tech-news-media",
   "releaseVersion": null,
-  "distFolder": null,
+  "distFolder": "media/uploads/blog/",
   "version": "version",
   "sourceFolder": "./dist",
   "region": "eu-west-1",
