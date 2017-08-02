@@ -5,12 +5,9 @@ import * as fs from "fs";
 import { isNullOrUndefined } from "util";
 
 export interface Config {
-    SourceBundle: {
-        S3Bucket: string,
-        releaseVersion: string,
-        envFolder: string
-    };
-    version: string;
+    S3Bucket: string,
+    releaseVersion: string,
+    sourceFolder: string
     distFolder: string; //'./dist',
     region: string; //'eu-west-1',
     DistributionId: string; // 'E1MJ7C07S228NM',

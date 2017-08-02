@@ -1,16 +1,23 @@
-import { ConfigHandler } from "./configHandler";
+import { Config, ConfigHandler } from "./configHandler";
 import S3 = require("aws-sdk/clients/s3");
 import Logger from "./logger";
 import * as Rx from 'rx';
+import * as glob from 'glob';
+import * as mime from 'mime';
+import * as fs from 'fs';
 import { DeleteObjectsOutput } from "aws-sdk/clients/s3";
 import { Observable } from "rxjs/Observable";
+import { readFile } from "fs";
 
 export default class UploadToS3 extends ConfigHandler {
-    config;
+    config: Config;
     AWS_CONFIG;
     S3: S3;
-    getListOfFiles;
-    deleteListOfFiles;
+    S3_listObjects;
+    S3_deleteObjects;
+    globRX;
+    fs_readFile;
+    S3_upload;
 
     constructor() {
         super();
@@ -20,8 +27,11 @@ export default class UploadToS3 extends ConfigHandler {
 
     init() {
         this.S3 = new S3(this.AWS_CONFIG);
-        this.getListOfFiles = Rx.Observable.fromNodeCallback(this.S3.listObjects.bind(this.S3));
-        this.deleteListOfFiles = Rx.Observable.fromNodeCallback(this.S3.deleteObjects.bind(this.S3));
+        this.S3_listObjects = Rx.Observable.fromNodeCallback(this.S3.listObjects.bind(this.S3));
+        this.S3_deleteObjects = Rx.Observable.fromNodeCallback(this.S3.deleteObjects.bind(this.S3));
+        this.S3_upload = Rx.Observable.fromNodeCallback(this.S3.upload.bind(this.S3));
+        this.globRX = Rx.Observable.fromNodeCallback(glob);
+        this.fs_readFile = Rx.Observable.fromNodeCallback(fs.readFile.bind(fs));
         this.emptyFolder();
     }
 
@@ -32,7 +42,7 @@ export default class UploadToS3 extends ConfigHandler {
                 Bucket: this.config.S3Bucket,
                 Prefix: `${this.config.distFolder || ''}`
             };
-            this.getListOfFiles(S3Params)
+            this.S3_listObjects(S3Params)
                 .map((data) => {
                     return data.Contents.map((content) => {
                         return {Key: content.Key}
@@ -47,14 +57,16 @@ export default class UploadToS3 extends ConfigHandler {
 
     deleteContentFolder(contents) {
         return Rx.Observable.create((observer) => {
+            if (contents.length === 0) {
+                observer.next(null);
+            }
             let S3Params = {
                 Bucket: this.config.S3Bucket,
                 Delete: {
                     Objects: contents
                 }
             };
-            console.log(contents);
-            return this.deleteListOfFiles(S3Params)
+            return this.S3_deleteObjects(S3Params)
                 .subscribe((_contents) => {
                     Logger.log(`[deleteListOfFiles], Number Of Removed Files:  ${_contents.Deleted.length}`);
                     observer.next(_contents);
@@ -65,7 +77,8 @@ export default class UploadToS3 extends ConfigHandler {
 
     emptyFolder(isDone: boolean = false) {
         if (isDone) {
-            Logger.log('WE DONE!!!!');
+            Logger.log('Folder cleaned');
+            this.getFilesReadyToUpload();
             return;
         }
 
@@ -78,158 +91,79 @@ export default class UploadToS3 extends ConfigHandler {
         let state$ = call();
 
         let sub = state$.subscribe(function (response) {
-            if (response.Deleted.length != 1000) {
+            if (!response || response.Deleted.length != 1000) {
                 Logger.log('Looks like we done here');
                 $this.emptyFolder(true);
             } else {
-                Logger.log('Looks like we should continue');
+                Logger.log('Looks like we should continue to clean');
                 $this.emptyFolder();
             }
             sub.dispose();
         });
 
-
-        // let _subscriber = this.deleteListOfFiles(S3Params)
-        //     .map((response) => {
-        //         if (response.Deleted.length == 1000)
-        //             throw 'There is MORE to delete';
-        //     })
-        //     .retryWhen((message) => {
-        //         return message.do((val) => console.log('valvalvalval', val))
-        //     });
-        //
-        // _subscriber.subscribe((response: DeleteObjectsOutput) => {
-        //     console.log('Number Of deleted items: ', response);
-        //     // console.log('Number Of deleted items: ', response.Deleted.length);
-        //
-        //     // if (response.Errors.length > 0)
-        //     //     this.errorHandler(response.Errors);
-        //
-        // }, this.errorHandler.bind(this))
-        //
-        // this.S3.deleteObjects(S3Params, function (err, data) {
-        //     if (err) {
-        //         callback(err);
-        //         reject(err);
-        //     } else if (data.Deleted.length == 1000) {
-        //         emptyBucket();
-        //     } else {
-        //         resolve(data.Deleted.length);
-        //     }
-        // });
     }
 
-    // this.S3.listObjects(S3Params, function (err, data) {
-    //     if (err) {
-    //         Logger.error(err.stack);
-    //     } else {
-    //         data.Contents.forEach(function (content) {
-    //             console.log({Key: content.Key});
-    //         });
-    //     }
-    // };
-    // return new Promise(function (resolve, reject) {
-    //     let filesCount = 0;
-    //
-    //     function emptyBucket() {
-    //         this.S3.listObjects(S3Params, function (err, data) {
-    //             if (err) {
-    //                 Logger.error(err.stack);
-    //                 reject(err);
-    //             }
-    //             filesCount = data.Contents.length;
-    //             if (filesCount == 0) {
-    //                 resolve('done')
-    //             }
-    //
-    //             S3Params = {
-    //                 Bucket: params.SourceBundle.S3Bucket,
-    //                 Delete: {
-    //                     Objects: []
-    //                 }
-    //             };
-    //
-    //             data.Contents.forEach(function (content) {
-    //                 S3Params.Delete.Objects.push({Key: content.Key});
-    //             });
-    //
-    //             S3.deleteObjects(S3Params, function (err, data) {
-    //                 if (err) {
-    //                     callback(err);
-    //                     reject(err);
-    //                 } else if (data.Deleted.length == 1000) {
-    //                     emptyBucket();
-    //                 } else {
-    //                     resolve(data.Deleted.length);
-    //                 }
-    //             });
-    //         });
-    //     }
-    //
-    //     emptyBucket()
-    // });
-    // }
+    getFilesReadyToUpload() {
+        Logger.log('Let\'s try to upload to ' + this.config.sourceFolder);
+        this.globRX(`${this.config.sourceFolder}/**/*.*`)
+            .subscribe(this.uploadFiles.bind(this))
+    }
 
 
-    // uploadFolder(config, folderName) {
-    //
-    //     return new Promise(function (resolve, reject) {
-    //
-    //         params = config;
-    //         if (!config.region || !aws_cred.AWS_SECRET_ACCESS_KEY || !aws_cred.AWS_ACCESS_SKEY_ID) {
-    //             throw new Error('Region, AWS_KEY, AWS_SECRET_KEY required!!!');
-    //         }
-    //
-    //         let AWS_CONFIG = {
-    //             region: config.region,
-    //             accessKeyId: aws_cred.AWS_ACCESS_SKEY_ID,
-    //             secretAccessKey: aws_cred.AWS_SECRET_ACCESS_KEY
-    //         };
-    //
-    //         S3 = new AWS.S3(AWS_CONFIG);
-    //         let numRemovedFiles = 0;
-    //         logger('STARTED');
-    //         removeFolder(params).then((numRemovedFiles) => {
-    //
-    //             logger(`Removed ${numRemovedFiles} files from [${params.SourceBundle.envFolder}current/] folder`);
-    //
-    //             glob(`${folderName}/**/*.*`, function (er, files) {
-    //
-    //                 async function doAsync() {
-    //                     try {
-    //                         let version = files.map(async (entry) => {
-    //                             let fileName = entry.replace(`${folderName}/`, '');
-    //                             let S3Params = {
-    //                                 ACL: "public-read",
-    //                                 Bucket: params.SourceBundle.S3Bucket,
-    //                                 Key: params.SourceBundle.envFolder + 'current/' + fileName,
-    //                                 ContentType: mime.lookup(fileName)
-    //                             };
-    //                             if (fileName.indexOf('index.html') != -1) {
-    //                                 S3Params.CacheControl = 'no-store';
-    //                             }
-    //                             if (fileName.indexOf('robots.txt') != -1) {
-    //                                 S3Params.Key = `${params.SourceBundle.envFolder}current/robots.txt`;
-    //                             }
-    //                             await uploadFile(entry, S3Params);
-    //                         });
-    //                         await Promise.all(release.concat(version));
-    //
-    //                     } catch (err) {
-    //                         callback(err)
-    //                     }
-    //                     clearS3Cache(config);
-    //                     logger('FINISHED');
-    //                 }
-    //
-    //                 doAsync();
-    //
-    //             });
-    //         });
-    //
-    //     });
-    // }
-    //
+    private readFile(filePath) {
+        return this.fs_readFile(filePath)
+            .catch((err) => Logger.error('[fs_readFile] error ', err));
+    }
+
+    private upload(S3params) {
+        return Rx.Observable.create((observer) => {
+            return this.S3_upload(S3params)
+                .subscribe((response) => {
+                    Logger.log(`Uploaded file: ${response.Bucket}/${response.Key}`);
+                    observer.next(true);
+                })
+        })
+    }
+
+    private uploadSingeFile(filePath, S3Params) {
+        return this.fs_readFile(filePath)
+            .map((fileData) => {
+                S3Params.Body = fileData;
+                return S3Params
+            }).flatMap(this.upload.bind(this));
+
+    }
+
+    uploadFiles(files) {
+
+        let uploadStream = files.map((fPath) => {
+            let S3fileName = fPath.replace(`${this.config.sourceFolder}/`, '');
+            let S3Params: S3.Types.PutObjectRequest = {
+                ACL: "public-read",
+                Bucket: this.config.S3Bucket,
+                Key: this.config.distFolder + S3fileName,
+                ContentType: mime.lookup(S3fileName)
+            };
+            if (S3fileName.indexOf('index.html') != -1) {
+                S3Params.CacheControl = 'no-store';
+            }
+            if (S3fileName.indexOf('robots.txt') != -1) {
+                S3Params.Key = `${this.config.distFolder}robots.txt`;
+            }
+            return this.uploadSingeFile(fPath, S3Params);
+        });
+
+        Rx.Observable.forkJoin(uploadStream)
+            .subscribe((results) => {
+                Logger.log('UPLOADED!!!');
+            })
+
+    }
+
+    clearS3Cache(config) {
+
+    }
+
     errorHandler(err) {
         console.error(err);
     }
