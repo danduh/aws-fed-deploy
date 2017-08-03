@@ -25,6 +25,7 @@
     "static",
     "files"
   ],
+  "postinstall": "tsc",
   "author": "Daniel Ostrovsky",
   "license": "ISC",
   "homepage": "https://bitbucket.org/danduh/aws-fed-deployment#readme",
