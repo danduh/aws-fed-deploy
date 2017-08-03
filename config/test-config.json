@@ -1,7 +1,7 @@
 {
   "S3Bucket": "tech-news-media",
   "releaseVersion": null,
-  "distFolder": "media/uploads/blog/",
+  "distFolder": null,
   "version": "version",
   "sourceFolder": "./dist",
   "region": "eu-west-1",
