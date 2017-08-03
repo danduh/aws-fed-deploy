@@ -17,18 +17,29 @@ export interface Config {
 }
 
 export class ConfigHandler {
+    config: Config;
+    private configUrl: string;
     public awsCred: { accessKeyId: string, secretAccessKey: string };
     public options: any;
-    public config: Config;
 
-    constructor() {
-        this.getCliConfig();
+
+    constructor(conf) {
+        this.configUrl = conf.dplConfig;
+        this.getConfig();
         this.getAwsCredentials();
     }
 
     private loadJson(path) {
         let content = fs.readFileSync(path);
         return JSON.parse(content.toString());
+    }
+
+    private getConfig(){
+        this.config = this.loadJson(this.configUrl);
+
+        if (typeof this.config.distFolder === 'string' && this.config.distFolder.slice(-1) !== '/') {
+            this.config.distFolder += '/'
+        }
     }
 
     private getCliConfig() {

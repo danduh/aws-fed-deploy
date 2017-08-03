@@ -12,6 +12,7 @@ class Logger {
     static error(msg: string, err: any = null) {
         console.log(util.format('[%s] %s', chalk.red('[' + params.EnvironmentName + ']'), msg, err));
     };
+
 }
 
 export default Logger;

@@ -5,9 +5,6 @@ import * as Rx from 'rx';
 import * as glob from 'glob';
 import * as mime from 'mime';
 import * as fs from 'fs';
-import { DeleteObjectsOutput } from "aws-sdk/clients/s3";
-import { Observable } from "rxjs/Observable";
-import { readFile } from "fs";
 
 export default class UploadToS3 extends ConfigHandler {
     config: Config;
@@ -18,9 +15,10 @@ export default class UploadToS3 extends ConfigHandler {
     globRX;
     fs_readFile;
     S3_upload;
+    observer;
 
-    constructor() {
-        super();
+    constructor(conf) {
+        super(conf);
         this.AWS_CONFIG = Object.assign({region: this.config.region}, this.awsCred);
         this.init()
     }
@@ -32,9 +30,22 @@ export default class UploadToS3 extends ConfigHandler {
         this.S3_upload = Rx.Observable.fromNodeCallback(this.S3.upload.bind(this.S3));
         this.globRX = Rx.Observable.fromNodeCallback(glob);
         this.fs_readFile = Rx.Observable.fromNodeCallback(fs.readFile.bind(fs));
-        this.emptyFolder();
     }
 
+    private doneWithUploading() {
+
+    }
+
+    public startUploadProcess() {
+        return Rx.Observable.create((observer) => {
+            this.observer = observer;
+            this.emptyFolder(false);
+
+            return function () {
+                console.log('disposed');
+            };
+        })
+    }
 
     getContentFolder() {
         return Rx.Observable.create((observer) => {
@@ -75,7 +86,7 @@ export default class UploadToS3 extends ConfigHandler {
 
     }
 
-    emptyFolder(isDone: boolean = false) {
+    emptyFolder(isDone: boolean = false, observer?) {
         if (isDone) {
             Logger.log('Folder cleaned');
             this.getFilesReadyToUpload();
@@ -105,7 +116,7 @@ export default class UploadToS3 extends ConfigHandler {
 
     getFilesReadyToUpload() {
         Logger.log('Let\'s try to upload to ' + this.config.sourceFolder);
-        this.globRX(`${this.config.sourceFolder}/**/*.*`)
+        return this.globRX(`${this.config.sourceFolder}/**/*.*`)
             .subscribe(this.uploadFiles.bind(this))
     }
 
@@ -117,10 +128,11 @@ export default class UploadToS3 extends ConfigHandler {
 
     private upload(S3params) {
         return Rx.Observable.create((observer) => {
-            return this.S3_upload(S3params)
+            this.S3_upload(S3params)
                 .subscribe((response) => {
                     Logger.log(`Uploaded file: ${response.Bucket}/${response.Key}`);
-                    observer.next(true);
+                    observer.onNext(true);
+                    observer.onCompleted();
                 })
         })
     }
@@ -136,7 +148,7 @@ export default class UploadToS3 extends ConfigHandler {
 
     uploadFiles(files) {
 
-        let uploadStream = files.map((fPath) => {
+        let uploadStream = [...files.map((fPath) => {
             let S3fileName = fPath.replace(`${this.config.sourceFolder}/`, '');
             let S3Params: S3.Types.PutObjectRequest = {
                 ACL: "public-read",
@@ -151,12 +163,14 @@ export default class UploadToS3 extends ConfigHandler {
                 S3Params.Key = `${this.config.distFolder}robots.txt`;
             }
             return this.uploadSingeFile(fPath, S3Params);
-        });
+        })];
 
-        Rx.Observable.forkJoin(uploadStream)
-            .subscribe((results) => {
-                Logger.log('UPLOADED!!!');
-            })
+        let subsc = Rx.Observable.forkJoin(uploadStream)
+
+        subsc.subscribe((results) => {
+            Logger.log('UPLOADED!!! ddd');
+            this.observer.next('DONE')
+        })
 
     }
 
