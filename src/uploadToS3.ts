@@ -165,7 +165,7 @@ export default class UploadToS3 extends ConfigHandler {
             return this.uploadSingeFile(fPath, S3Params);
         })];
 
-        let subsc = Rx.Observable.forkJoin(uploadStream)
+        let subsc = Rx.Observable.forkJoin(uploadStream);
 
         subsc.subscribe((results) => {
             Logger.log('UPLOADED!!! ddd');

@@ -124,14 +124,14 @@ class UploadToS3 extends configHandler_1.ConfigHandler {
                 let S3Params = {
                     ACL: "public-read",
                     Bucket: this.config.S3Bucket,
-                    Key: this.config.distFolder + S3fileName,
+                    Key: `${!!this.config.distFolder ? this.config.distFolder : ''}${S3fileName}`,
                     ContentType: mime.lookup(S3fileName)
                 };
                 if (S3fileName.indexOf('index.html') != -1) {
                     S3Params.CacheControl = 'no-store';
                 }
                 if (S3fileName.indexOf('robots.txt') != -1) {
-                    S3Params.Key = `${this.config.distFolder}robots.txt`;
+                    S3Params.Key = `${!!this.config.distFolder ? this.config.distFolder : ''}robots.txt`;
                 }
                 return this.uploadSingeFile(fPath, S3Params);
             })];

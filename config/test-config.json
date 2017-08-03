@@ -1,5 +1,5 @@
 {
-  "S3Bucket": "tech-news-media",
+  "S3Bucket": "coins-ngx-prod",
   "releaseVersion": null,
   "distFolder": null,
   "version": "version",
@@ -11,6 +11,6 @@
     "/index.html",
     "/service-worker.js"
   ],
-  "ApplicationName": "Compit2_SPA",
-  "EnvironmentName": "INTEGRATION"
+  "ApplicationName": "NGX-Coins-PROD",
+  "EnvironmentName": "Production"
 }
