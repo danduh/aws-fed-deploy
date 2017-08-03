@@ -12,6 +12,7 @@
     "type": "git",
     "url": "git+https://danduh@bitbucket.org/danduh/aws-fed-deployment.git"
   },
+  "bin": "test.js",
   "keywords": [
     "aws",
     "amazon",
