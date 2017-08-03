@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 import UploadToS3 from "./uploadToS3";
 import { CloudFrontHandler } from "./cloudFront";
 import Logger from "./logger";
@@ -21,8 +23,6 @@ export const doUpload = (some) => {
         });
 
 };
-
 import * as mr from 'make-runnable'
-import { ConfigHandler } from "./configHandler";
 
-mr
+mr;
