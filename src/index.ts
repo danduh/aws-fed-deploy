@@ -3,12 +3,13 @@
 import UploadToS3 from "./uploadToS3";
 import { CloudFrontHandler } from "./cloudFront";
 import Logger from "./logger";
+import * as yargs from 'yargs';
 
 export * from './releaseName';
 export * from './configHandler';
 
 
-export const doUpload = (some) => {
+const doUpload = (some) => {
     let uploader = new UploadToS3(some);
     let cloudFront = new CloudFrontHandler(some);
     uploader.startUploadProcess()
@@ -23,6 +24,8 @@ export const doUpload = (some) => {
         });
 
 };
-import * as mr from 'make-runnable'
 
-mr;
+const namedArgs = Object.assign({}, yargs.argv);
+delete namedArgs._;
+delete namedArgs.$0;
+doUpload(namedArgs);
