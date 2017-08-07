@@ -10,7 +10,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://danduh@bitbucket.org/danduh/aws-fed-deployment.git"
+    "url": "git+https://github.com/danduh/aws-fed-deploy.git"
   },
   "bin": "dist/index.js",
   "keywords": [
@@ -28,7 +28,7 @@
   "postinstall": "tsc",
   "author": "Daniel Ostrovsky",
   "license": "ISC",
-  "homepage": "https://bitbucket.org/danduh/aws-fed-deployment#readme",
+  "homepage": "https://github.com/danduh/aws-fed-deploy.git#readme",
   "dependencies": {
     "@types/node": "^8.0.17",
     "aws-sdk": "^2.91.0",

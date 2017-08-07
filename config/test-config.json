@@ -1,5 +1,5 @@
 {
-  "S3Bucket": "coins-ngx-prod",
+  "S3Bucket": "my-bucket-name",
   "releaseVersion": null,
   "distFolder": null,
   "version": "version",
@@ -11,6 +11,6 @@
     "/index.html",
     "/service-worker.js"
   ],
-  "ApplicationName": "NGX-Coins-PROD",
+  "ApplicationName": "My Cool APP Name",
   "EnvironmentName": "Production"
 }
