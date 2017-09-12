@@ -1,5 +1,7 @@
 # Easy way to deploy web app to S3/CF
 
+[![npm version](https://badge.fury.io/js/aws-fed-deployment.svg)](https://badge.fury.io/js/aws-fed-deployment)
+
 This plugin dose two thing:
 * Upload build ```./dist``` to S3 bucket.
 * Invalidate CloudFront
@@ -19,6 +21,7 @@ Example for config JSON:
     "/index.html",
     "/service-worker.js"
   ], // required
+  "AWSProfile": "My-aws-cli-profile",
   "ApplicationName": "My-Cool-APP-NAME",
   "EnvironmentName": "Production" //
 }

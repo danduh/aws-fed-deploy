@@ -1,8 +1,8 @@
 import Logger from "./logger";
 import * as minimist from 'minimist';
-import * as path from "path";
+import * as AWS from 'aws-sdk';
 import * as fs from "fs";
-import { isNullOrUndefined } from "util";
+import {isNullOrUndefined} from "util";
 
 export interface Config {
     S3Bucket: string,
@@ -14,6 +14,7 @@ export interface Config {
     ItemsToInvalidate: string[]; //['/*', '/index.html', '/service-worker.js'],
     ApplicationName: string; // "Compit2_SPA",
     EnvironmentName: string; // "INTEGRATION"
+    AWSProfile: string;
 }
 
 export class ConfigHandler {
@@ -34,7 +35,7 @@ export class ConfigHandler {
         return JSON.parse(content.toString());
     }
 
-    private getConfig(){
+    private getConfig() {
         this.config = this.loadJson(this.configUrl);
 
         if (typeof this.config.distFolder === 'string' && this.config.distFolder.slice(-1) !== '/') {
@@ -68,12 +69,17 @@ export class ConfigHandler {
 
     getAwsCredentials() {
         try {
-            this.awsCred = {
-                accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-                secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY
-            };
-            if (isNullOrUndefined(this.awsCred.accessKeyId) || isNullOrUndefined(this.awsCred.secretAccessKey))
+            if (!isNullOrUndefined(process.env.AWS_ACCESS_KEY_ID) && !isNullOrUndefined(process.env.AWS_ACCESS_KEY_ID)) {
+                this.awsCred = {
+                    accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+                    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY
+                };
+            } else if (!!this.config.AWSProfile) {
+                Logger.log(`Using AWS Profile: ${this.config.AWSProfile}`);
+                this.awsCred = new AWS.SharedIniFileCredentials({profile: this.config.AWSProfile});
+            } else {
                 throw new Error('AWS_ACCESS_KEY_ID or AWS_SECRET_ACCESS_KEY is missing');
+            }
 
             Logger.log('AWS credentials init success');
         } catch (err) {
