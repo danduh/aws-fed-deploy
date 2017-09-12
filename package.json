@@ -1,12 +1,13 @@
 {
   "name": "aws-fed-deployment",
-  "version": "v0.0.4",
+  "version": "v0.1.0",
   "description": "this package will help you to deploy your APP to AWS (S3-CF)",
   "main": "dist/index.js",
   "scripts": {
     "start": "tsc && node ./dist/index.js doUpload --dpl-config config/test-config.json",
     "test": "test",
-    "tsc": "tsc"
+    "tsc": "tsc",
+    "prepare": "tsc"
   },
   "repository": {
     "type": "git",

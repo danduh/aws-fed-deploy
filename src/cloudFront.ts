@@ -12,7 +12,7 @@ export class CloudFrontHandler extends ConfigHandler {
 
     constructor(conf) {
         super(conf);
-        this.AWS_CONFIG = Object.assign({region: this.config.region}, this.awsCred);
+        this.AWS_CONFIG = Object.assign({region: this.config.region,  sslEnabled: false}, this.awsCred);
         this.init()
     }
 

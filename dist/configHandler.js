@@ -2,10 +2,12 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const logger_1 = require("./logger");
 const minimist = require("minimist");
+const AWS = require("aws-sdk");
 const fs = require("fs");
 const util_1 = require("util");
 class ConfigHandler {
     constructor(conf) {
+        this.awsCred = null;
         this.configUrl = conf.dplConfig;
         this.getConfig();
         this.getAwsCredentials();
@@ -43,13 +45,26 @@ class ConfigHandler {
         }
     }
     getAwsCredentials() {
+        if (!!this.awsCred)
+            return this.awsCred;
         try {
-            this.awsCred = {
-                accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-                secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY
-            };
-            if (util_1.isNullOrUndefined(this.awsCred.accessKeyId) || util_1.isNullOrUndefined(this.awsCred.secretAccessKey))
+            if (!util_1.isNullOrUndefined(process.env.AWS_ACCESS_KEY_ID) && !util_1.isNullOrUndefined(process.env.AWS_ACCESS_KEY_ID)) {
+                this.awsCred = {
+                    accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+                    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY
+                };
+            }
+            else if (!!this.config.AWSProfile) {
+                logger_1.default.log(`Using AWS Profile: ${this.config.AWSProfile}`);
+                let _awsCred = new AWS.SharedIniFileCredentials({ profile: this.config.AWSProfile });
+                this.awsCred = {
+                    accessKeyId: _awsCred.accessKeyId,
+                    secretAccessKey: _awsCred.secretAccessKey
+                };
+            }
+            else {
                 throw new Error('AWS_ACCESS_KEY_ID or AWS_SECRET_ACCESS_KEY is missing');
+            }
             logger_1.default.log('AWS credentials init success');
         }
         catch (err) {

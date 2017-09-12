@@ -20,7 +20,7 @@ export interface Config {
 export class ConfigHandler {
     config: Config;
     private configUrl: string;
-    public awsCred: { accessKeyId: string, secretAccessKey: string };
+    public awsCred: { accessKeyId: string, secretAccessKey: string } = null;
     public options: any;
 
 
@@ -68,6 +68,9 @@ export class ConfigHandler {
     }
 
     getAwsCredentials() {
+        if(!!this.awsCred)
+            return this.awsCred;
+
         try {
             if (!isNullOrUndefined(process.env.AWS_ACCESS_KEY_ID) && !isNullOrUndefined(process.env.AWS_ACCESS_KEY_ID)) {
                 this.awsCred = {
@@ -76,7 +79,11 @@ export class ConfigHandler {
                 };
             } else if (!!this.config.AWSProfile) {
                 Logger.log(`Using AWS Profile: ${this.config.AWSProfile}`);
-                this.awsCred = new AWS.SharedIniFileCredentials({profile: this.config.AWSProfile});
+                let _awsCred = new AWS.SharedIniFileCredentials({profile: this.config.AWSProfile});
+                this.awsCred = {
+                    accessKeyId: _awsCred.accessKeyId,
+                    secretAccessKey: _awsCred.secretAccessKey
+                };
             } else {
                 throw new Error('AWS_ACCESS_KEY_ID or AWS_SECRET_ACCESS_KEY is missing');
             }

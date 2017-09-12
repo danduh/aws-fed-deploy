@@ -11,6 +11,7 @@
     "/index.html",
     "/service-worker.js"
   ],
+  "AWSProfile":"MyAWSProfile",
   "ApplicationName": "My Cool APP Name",
   "EnvironmentName": "Production"
 }

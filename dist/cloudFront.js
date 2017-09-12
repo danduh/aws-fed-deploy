@@ -7,7 +7,7 @@ const logger_1 = require("./logger");
 class CloudFrontHandler extends configHandler_1.ConfigHandler {
     constructor(conf) {
         super(conf);
-        this.AWS_CONFIG = Object.assign({ region: this.config.region }, this.awsCred);
+        this.AWS_CONFIG = Object.assign({ region: this.config.region, sslEnabled: false }, this.awsCred);
         this.init();
     }
     init() {
